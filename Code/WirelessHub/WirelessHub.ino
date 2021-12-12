@@ -1,8 +1,8 @@
 #include "ESP32Encoder.h"  // https://github.com/madhephaestus/ESP32Encoder/
 #include   "Keypad.h"           // https://github.com/Chris--A/Keypad
-#include "BleGamepad.h"      // https://github.com/MagnusThome/ESP32-BLE-Gamepad
+#include <BleGamepad.h>      // https://github.com/lemmingDev/ESP32-BLE-Gamepad
 
-#define numOfButtons        24
+#define numOfButtons        28
 #define numOfHatSwitches    0
 #define enableX             false
 #define enableY             false
@@ -18,13 +18,13 @@
 #define enableBrake         false
 #define enableSteering      false
 
-BleGamepad bleGamepad("WirelessHub", "LawSome", 100);
+BleGamepad bleGamepad("WirelessHub", "HUB", 100);
 
 
 ////////////////////// BUTTON MATRIX //////////////////////
 #define ROWS 5
 #define COLS 4
-uint8_t rowPins[ROWS] = {13, 14, 15, 16, 33};
+uint8_t rowPins[ROWS] = {13, 14, 15, 16, 33}; //Physical GPIO
 uint8_t colPins[COLS] = {17, 18, 19, 21};
 uint8_t keymap[ROWS][COLS] = {
   {0,1,2,3},
@@ -32,15 +32,15 @@ uint8_t keymap[ROWS][COLS] = {
   {8,9,10,11},
   {12,13,14,15},
   {24,25,26,27}
-};
+};  //joystick key serial number
 Keypad customKeypad = Keypad( makeKeymap(keymap), rowPins, colPins, ROWS, COLS); 
 
 
 //////////// ROTARY ENCODERS (WITH PUSH SWITCHES) ////////////
 #define MAXENC 4
-uint8_t uppPin[MAXENC] = {22, 25, 27, 04};
+uint8_t uppPin[MAXENC] = {22, 25, 27, 04};  //Physical GPIO
 uint8_t dwnPin[MAXENC] = {23, 26, 32, 05};
-uint8_t encoderUpp[MAXENC] = {16,18,20,22};
+uint8_t encoderUpp[MAXENC] = {16,18,20,22}; //joystick key serial number
 uint8_t encoderDwn[MAXENC] = {17,19,21,23};
 ESP32Encoder encoder[MAXENC];
 unsigned long holdoff[MAXENC] = {0,0,0,0};
@@ -48,10 +48,11 @@ int32_t prevenccntr[MAXENC] = {0,0,0,0};
 bool prevprs[MAXENC] = {0,0,0,0};
 #define HOLDOFFTIME 150   
 
-
-
-
-
+//////////// BatteryMeasure ////////////
+#define batteryMeasurepin 36  //battery voltage measure GPIO
+uint8_t batteryLevel = 100;
+uint64_t batteryTiming = 14400000000; //Battery power timing report
+uint64_t  batteryNow = 0;
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
@@ -65,14 +66,11 @@ void setup() {
   bleGamepad.begin(numOfButtons,numOfHatSwitches,enableX,enableY,enableZ,enableRZ,enableRX,enableRY,enableSlider1,enableSlider2,enableRudder,enableThrottle,enableAccelerator,enableBrake,enableSteering);
 }
 
-
-
 ////////////////////////////////////////////////////////////////////////////////////////
 
 void loop() {
 
   unsigned long now = millis();
-
 
   // -- ROTARY ENCODERS : ROTATION -- //
 
@@ -90,13 +88,13 @@ void loop() {
         holdoff[i] = 0;
       }
     }
-    
-  // -- ROTARY ENCODERS : PUSH SWITCH -- //
-
   }
+  
+  // -- ROTARY ENCODERS : PUSH SWITCH -- //
+  
+  customKeypad.getKey();    // READ BUTTON MATRIX (EVENT CALLBACK SETUP)
 
-customKeypad.getKey();    // READ BUTTON MATRIX (EVENT CALLBACK SETUP)
- 
+  batteryUpdate();    //battery power report
 }
 
 
@@ -136,6 +134,19 @@ void releaseKey(uint8_t key) {
     }
 }
 
+////////////////////////////////////////////////////////////////////////////////////////
 
+void batteryUpdate()
+{
+  batteryNow++;
+  if (batteryNow == batteryTiming)
+  {
+    batteryNow = 0;
+    int analogValue = analogRead(batteryMeasurepin);
+    double batteryVoltage = 2*(((double)analogValue)/4095)*3.3;
+    batteryLevel = ((batteryVoltage -3.6)/(4.2 - 3.6))*100;
+    bleGamepad.setBatteryLevel(batteryLevel);
+  }
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////
