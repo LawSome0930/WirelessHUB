@@ -18,7 +18,7 @@
 #define enableBrake         false
 #define enableSteering      false
 
-BleGamepad bleGamepad("WirelessHub", "HUB", 100);
+BleGamepad bleGamepad("WirelessHub", "HUB", 63);
 
 
 ////////////////////// BUTTON MATRIX //////////////////////
@@ -50,9 +50,9 @@ bool prevprs[MAXENC] = {0,0,0,0};
 
 //////////// BatteryMeasure ////////////
 #define batteryMeasurepin 36  //battery voltage measure GPIO
-uint8_t batteryLevel = 100;
+uint8_t batteryLevel = 100; //record battery power level
 uint64_t batteryTiming = 14400000000; //Battery power timing report
-uint64_t  batteryNow = 0;
+uint64_t  batteryNow = 14400000000;
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
@@ -94,13 +94,13 @@ void loop() {
   
   customKeypad.getKey();    // READ BUTTON MATRIX (EVENT CALLBACK SETUP)
 
-  batteryUpdate();    //battery power report
+  // batteryUpdate();    //battery power report
 }
 
 
 
 
-////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////getKey() EVENT CALLBACK FUNCTIOn////////////////////////////
 
 void keypadEvent(KeypadEvent key){
   uint8_t keystate = customKeypad.getState();
@@ -134,8 +134,8 @@ void releaseKey(uint8_t key) {
     }
 }
 
-////////////////////////////////////////////////////////////////////////////////////////
 
+/*battery power mearsure function*/
 void batteryUpdate()
 {
   batteryNow++;
@@ -148,5 +148,3 @@ void batteryUpdate()
     bleGamepad.setBatteryLevel(batteryLevel);
   }
 }
-
-////////////////////////////////////////////////////////////////////////////////////////
