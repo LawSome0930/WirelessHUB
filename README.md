@@ -1,7 +1,9 @@
 # WirelessHUB
-Base on:
+Code base on:
 - https://www.thingiverse.com/thing:2813599
-- https://github.com/MagnusThome/ESP32-BLE-Gamepad
+- https://github.com/MagnusThome/ESP32-BLE-Gamepad  
+
+Part of 3D model from: https://grabcad.com/library
 *** 
 Libraries version:
 - ESP32-BLE-Gamepad: https://github.com/lemmingDev/ESP32-BLE-Gamepad/releases/tag/v0.3.4
