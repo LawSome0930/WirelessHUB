@@ -1,6 +1,6 @@
 #include "ESP32Encoder.h"  // https://github.com/madhephaestus/ESP32Encoder/
 #include   "Keypad.h"           // https://github.com/Chris--A/Keypad
-#include <BleGamepad.h>      // https://github.com/lemmingDev/ESP32-BLE-Gamepad
+#include "BleGamepad.h"     // https://github.com/lemmingDev/ESP32-BLE-Gamepad
 
 #define numOfButtons        28
 #define numOfHatSwitches    0
@@ -18,13 +18,13 @@
 #define enableBrake         false
 #define enableSteering      false
 
-BleGamepad bleGamepad("WirelessHub", "HUB", 63);
+BleGamepad bleGamepad("WirelessHub", "HUB", 100);
 
 
 ////////////////////// BUTTON MATRIX //////////////////////
 #define ROWS 5
 #define COLS 4
-uint8_t rowPins[ROWS] = {13, 14, 15, 16, 33}; //Physical GPIO
+uint8_t rowPins[ROWS] = {13, 14, 15, 16, 33};
 uint8_t colPins[COLS] = {17, 18, 19, 21};
 uint8_t keymap[ROWS][COLS] = {
   {0,1,2,3},
@@ -32,15 +32,15 @@ uint8_t keymap[ROWS][COLS] = {
   {8,9,10,11},
   {12,13,14,15},
   {24,25,26,27}
-};  //joystick key serial number
+};
 Keypad customKeypad = Keypad( makeKeymap(keymap), rowPins, colPins, ROWS, COLS); 
 
 
 //////////// ROTARY ENCODERS (WITH PUSH SWITCHES) ////////////
 #define MAXENC 4
-uint8_t uppPin[MAXENC] = {22, 25, 27, 04};  //Physical GPIO
+uint8_t uppPin[MAXENC] = {22, 25, 27, 04};
 uint8_t dwnPin[MAXENC] = {23, 26, 32, 05};
-uint8_t encoderUpp[MAXENC] = {16,18,20,22}; //joystick key serial number
+uint8_t encoderUpp[MAXENC] = {16,18,20,22};
 uint8_t encoderDwn[MAXENC] = {17,19,21,23};
 ESP32Encoder encoder[MAXENC];
 unsigned long holdoff[MAXENC] = {0,0,0,0};
@@ -63,13 +63,13 @@ void setup() {
   }
   customKeypad.addEventListener(keypadEvent);
   customKeypad.setHoldTime(1);
-  bleGamepad.begin(numOfButtons,numOfHatSwitches,enableX,enableY,enableZ,enableRZ,enableRX,enableRY,enableSlider1,enableSlider2,enableRudder,enableThrottle,enableAccelerator,enableBrake,enableSteering);
+  bleGamepad.begin();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
 void loop() {
-
+  
   unsigned long now = millis();
 
   // -- ROTARY ENCODERS : ROTATION -- //
@@ -94,7 +94,7 @@ void loop() {
   
   customKeypad.getKey();    // READ BUTTON MATRIX (EVENT CALLBACK SETUP)
 
-  // batteryUpdate();    //battery power report
+  batteryUpdate();    //battery power report
 }
 
 
